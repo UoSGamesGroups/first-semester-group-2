@@ -3,10 +3,12 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour {
 	public GameObject[] cameras;
+	public GameObject street;
+	public GameObject[] Levels;
 	int cameraNumber = 0;
 	// Use this for initialization
 	void Start () {
-	
+		Instantiate (street, new Vector3 (0, 0, 0), new Quaternion (0, 0, 0, 0));
 	}
 	
 	// Update is called once per frame
