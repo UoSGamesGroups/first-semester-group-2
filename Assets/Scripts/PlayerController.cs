@@ -8,12 +8,15 @@ public class PlayerController : MonoBehaviour {
 	public Text noEntryText;
 	public GameManager gameManager;
 	public Slider energySlider;
+	public GameObject fadePanel;
 	float interactTimer;
 	bool holdingBucket = false;
 	GameObject bucketToHold;
 	public GameObject bucketPositionObject;
 	public bool readyToInteract = true;
 	float ReadyToDrop = 0;
+	bool openingDoor;
+	float openDoorTimer;
 	[SerializeField]
 	LayerMask mask;
 	// Use this for initialization
@@ -25,6 +28,7 @@ public class PlayerController : MonoBehaviour {
 		readyToInteract = true;
 		PlayerPrefs.SetInt("LevelNumber", 1);
 		holdingBucket = false;
+		openDoorTimer = 0;
 	}
 	
 	// Update is called once per frame
@@ -40,6 +44,8 @@ public class PlayerController : MonoBehaviour {
 		if (holdingBucket == true) {
 			HoldBucket(bucketToHold);
 		}
+		FadingPanel ();
+
 	}
 
 	public void AddEnergy(){
@@ -62,17 +68,35 @@ public class PlayerController : MonoBehaviour {
 		Debug.Log("ReadyToOpen is " + readyToInteract);
 		if (readyToInteract == true) {
 			if (Physics.Raycast (playerCamera.transform.position, playerCamera.transform.forward, out hit, distance, mask)) {
-
+				GameObject HitObject = hit.collider.gameObject;
 				Debug.Log ("We hit " + hit.collider.gameObject.name);
 
 				if (hit.collider.tag == "Door") {
 					if (InteractText.enabled == false) {
 						InteractText.enabled = true;
 						InteractText.text = "Click to open door";
+					} else {
+						
 					}
-					if (Input.GetButtonDown ("Fire1")) {
-						GameObject HitObject = hit.collider.gameObject;
+					if (openingDoor == true && openDoorTimer <= 0){
+						
 						OpenDoor (HitObject.GetComponent<DoorScript> ().levelToLoad, HitObject.GetComponent<DoorScript> ().spawnPosition, HitObject.GetComponent<DoorScript> ().spawnRotation);
+					}
+					if (Input.GetButtonDown ("Fire1"))
+					if (PlayerPrefs.GetInt ("LevelNumber") >= HitObject.GetComponent<DoorScript> ().levelToLoad) {
+						
+						this.GetComponent<MouseLook> ().enabled = false;
+						this.GetComponent<Movement> ().enabled = false;
+						playerCamera.GetComponent<MouseLook> ().enabled = false;
+						openingDoor = true;
+						openDoorTimer = 2;
+						InteractText.text = "";
+					} else {
+						Debug.Log ("Not Ready");
+						interactTimer = 3;
+						readyToInteract = false;
+						InteractText.enabled = false;
+						noEntryText.enabled = true;
 					}
 				} else if (hit.collider.tag == "Key") {
 					if (InteractText.enabled == false) {
@@ -80,7 +104,6 @@ public class PlayerController : MonoBehaviour {
 						InteractText.text = "Click to take key";
 					}
 					if (Input.GetButtonDown ("Fire1")) {
-						GameObject HitObject = hit.collider.gameObject;
 						TakeKey (HitObject.GetComponent<KeyScript> ().thisLevelNumber+1, HitObject.gameObject);
 					}
 				} else if (hit.collider.tag == "Bucket" && holdingBucket == false) {
@@ -89,7 +112,6 @@ public class PlayerController : MonoBehaviour {
 						InteractText.text = "Click to pickup bucket";
 					}
 					if (Input.GetButtonDown ("Fire1")) {
-						GameObject HitObject = hit.collider.gameObject;
 						bucketToHold = HitObject;
 						holdingBucket = true;
 						ReadyToDrop = 0;
@@ -113,6 +135,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+
 	void OpenDoor(int LevelNumber, Vector3 SpawnPos, Vector3 SpawnRot){
 		Debug.Log ("Opening level " + LevelNumber);
 		if (PlayerPrefs.GetInt ("LevelNumber") >= LevelNumber) {
@@ -121,6 +144,10 @@ public class PlayerController : MonoBehaviour {
 			this.transform.eulerAngles = SpawnRot - new Vector3 (this.GetComponent<MouseLook> ().rotationX, this.GetComponent<MouseLook> ().rotationY);
 			Destroy (GameObject.FindWithTag ("Level"));
 			Instantiate (gameManager.Levels [LevelNumber]);
+			this.GetComponent<MouseLook>().enabled = true;
+			this.GetComponent<Movement>().enabled = true;
+			playerCamera.GetComponent<MouseLook>().enabled = true;
+			openingDoor = false;
 		} else {
 			Debug.Log ("Not Ready");
 			interactTimer = 3;
@@ -145,6 +172,21 @@ public class PlayerController : MonoBehaviour {
 			interactTimer = 1;
 		}
 		ReadyToDrop += Time.deltaTime;
+	}
+
+	void FadingPanel(){
+		if (openDoorTimer > 0) {
+			openDoorTimer -= Time.deltaTime;
+			fadePanel.GetComponent<Image> ().enabled = true;
+			fadePanel.GetComponent<Image> ().color = new Color (0, 0, 0, Mathf.MoveTowards (fadePanel.GetComponent<Image> ().color.a, 255, 0.01f));
+		} else {
+			if (fadePanel.GetComponent<Image> ().enabled == true) {
+				fadePanel.GetComponent<Image> ().color = new Color (0, 0, 0, Mathf.MoveTowards (fadePanel.GetComponent<Image> ().color.a, 0, 0.01f));
+				if (fadePanel.GetComponent<Image> ().color == new Color (0, 0, 0, 0)) {
+					fadePanel.GetComponent<Image> ().enabled = false;
+				}
+			}
+		}
 	}
 
 }
