@@ -2,27 +2,26 @@
 using System.Collections;
 
 public class Movement : MonoBehaviour {
-
-	public float speed = 50f;
-
-	Vector3 direction;
-	CharacterController CC;
+	float Speed = 5;
 
 	// Use this for initialization
-	void Start () 
-	{
-		CC = GetComponent<CharacterController>();
+	void Start () {
 	}
 	
 	// Update is called once per frame
-	void Update () 
-	{
-		Move();
+	void Update () {
+		Move ();
 	}
 
-	void Move()
-	{
-		CC.SimpleMove(direction * speed * Time.deltaTime);
-		direction = transform.rotation * new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")).normalized; 
+	void Move(){
+		if (Input.GetAxis ("Horizontal") > 0.01f) {
+			this.transform.position += new Vector3(Speed,0,0) * Time.deltaTime;
+            this.transform.localScale = new Vector3(0.06f, 0.14f, 1);
+		}
+		if (Input.GetAxis ("Horizontal") < -0.01f) {
+			this.transform.position += new Vector3(-Speed,0,0) * Time.deltaTime;
+            this.transform.localScale = new Vector3(-0.06f, 0.14f, 1);
+        }
+
 	}
 }
