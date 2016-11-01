@@ -28,17 +28,20 @@ public class PlayerController : MonoBehaviour {
 	void Start () {
 		Cursor.lockState = CursorLockMode.Locked;
 		this.transform.position = new Vector3 (0, 1, 0);
-		energySlider.value = 0.2f;
+		//energySlider.value = 0.2f;
 		noEntryText.enabled = false;
 		readyToInteract = true;
-		PlayerPrefs.SetInt("LevelNumber", 1);
 		holdingBucket = false;
 		openDoorTimer = 0;
+		PlayerPrefs.SetInt("LevelNumber", 1);
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		Interact ();
+		if (PlayerPrefs.GetInt ("LevelNumber") == 0) {
+			PlayerPrefs.SetInt ("LevelNumber", 1);
+		}
 		if (interactTimer > 0) {
 			interactTimer -= Time.deltaTime;
 		} else if (readyToInteract == false && holdingBucket == false){
@@ -80,7 +83,7 @@ public class PlayerController : MonoBehaviour {
 				if (openingDoor == true && openDoorTimer <= 0){
 					OpenDoor (DoorToOpen.GetComponent<DoorScript> ().levelToLoad, DoorToOpen.GetComponent<DoorScript> ().spawnPosition);
 				}
-				if (Input.GetButtonDown ("Jump"))
+				if (Input.GetButtonDown ("Interact"))
 				if (PlayerPrefs.GetInt ("LevelNumber") >= DoorToOpen.GetComponent<DoorScript> ().levelToLoad) {
 					this.GetComponent<Movement> ().enabled = false;
 					openingDoor = true;
@@ -98,7 +101,7 @@ public class PlayerController : MonoBehaviour {
 					InteractText.enabled = true;
 					InteractText.text = "Click to take key";
 				}
-				if (Input.GetButtonDown ("Jump")) {
+				if (Input.GetButtonDown ("Interact")) {
 					TakeKey (keyToPickup.GetComponent<KeyScript> ().thisLevelNumber+1, keyToPickup.gameObject);
 				}
 			} else if (nextToBucket && holdingBucket == false) {
@@ -106,7 +109,7 @@ public class PlayerController : MonoBehaviour {
 					InteractText.enabled = true;
 					InteractText.text = "Click to pickup bucket";
 				}
-				if (Input.GetButtonDown ("Jump")) {
+				if (Input.GetButtonDown ("Interact")) {
 					bucketToHold = BucketToPickup;
 					holdingBucket = true;
 					ReadyToDrop = 0;
@@ -162,7 +165,7 @@ public class PlayerController : MonoBehaviour {
 		
 		bucket.transform.position = bucketPositionObject.transform.position;
 		bucket.transform.rotation = bucketPositionObject.transform.rotation;
-		if (Input.GetButtonDown("Jump") && ReadyToDrop >= 0.5){
+		if (Input.GetButtonDown("Interact") && ReadyToDrop >= 0.5){
 			holdingBucket = false;
 			interactTimer = 1;
 		}
