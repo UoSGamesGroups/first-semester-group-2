@@ -14,8 +14,9 @@ public class DripScript : MonoBehaviour {
 	}
 
 	void OnCollisionEnter2D(Collision2D coll){
-		/*if (coll.gameObject.tag == "Ground") {*/
+		//if (coll.gameObject.tag == "Ground") {
 			Destroy (this.gameObject);
-		/*}*/
+            
+		//}
 	}
 }

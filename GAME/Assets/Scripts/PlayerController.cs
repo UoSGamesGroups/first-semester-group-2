@@ -3,7 +3,9 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
-	public Camera playerCamera;
+
+    #region Variables
+    public Camera playerCamera;
 	public Text InteractText;
 	public Text noEntryText;
 	public GameManager gameManager;
@@ -23,20 +25,24 @@ public class PlayerController : MonoBehaviour {
     GameObject DoorToOpen;
     GameObject keyToPickup;
     GameObject BucketToPickup;
+    float fadeTimer;
+    bool dead;
+    int currentLevel;
+    #endregion
 
-	// Use this for initialization
-	void Start () {
+    void Start () {
 		Cursor.lockState = CursorLockMode.Locked;
-		this.transform.position = new Vector3 (0, 1, 0);
+		this.transform.position = new Vector3 (0, 0, 0);
 		//energySlider.value = 0.2f;
 		noEntryText.enabled = false;
 		readyToInteract = true;
 		holdingBucket = false;
 		openDoorTimer = 0;
+        fadeTimer = 0;
 		PlayerPrefs.SetInt("LevelNumber", 1);
+        currentLevel = 0;
 	}
 	
-	// Update is called once per frame
 	void Update () {
 		Interact ();
 		if (PlayerPrefs.GetInt ("LevelNumber") == 0) {
@@ -52,7 +58,17 @@ public class PlayerController : MonoBehaviour {
 		if (holdingBucket == true) {
 			HoldBucket(bucketToHold);
 		}
-		FadingPanel ();
+
+        if (openDoorTimer > 0) {
+            openDoorTimer -= Time.deltaTime;
+        }
+
+        if (dead == true && fadeTimer <= 0)
+        {
+            Die();
+        }
+
+        FadingPanel ();
 
 	}
 
@@ -63,12 +79,16 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	public void UseEnergy(){
-		if(energySlider.value > 0){
-			energySlider.value -= 0.2f;
-		}
+		if(energySlider.value > 0.1f){
+			energySlider.value -= 0.1f;
+        }
+        else
+        {
+            energySlider.value -= 0.1f;
+            fadeTimer = 2;
+            dead = true;
+        }
 	}
-
-
 
 	void Interact(){
 		Debug.Log("ReadyToOpen is " + readyToInteract);
@@ -77,17 +97,19 @@ public class PlayerController : MonoBehaviour {
 
 			    if (InteractText.enabled == false) {
 					InteractText.enabled = true;
-					InteractText.text = "Click to open door";
+					InteractText.text = "Press space to open door";
 				}
 
 				if (openingDoor == true && openDoorTimer <= 0){
 					OpenDoor (DoorToOpen.GetComponent<DoorScript> ().levelToLoad, DoorToOpen.GetComponent<DoorScript> ().spawnPosition);
 				}
-				if (Input.GetButtonDown ("Interact"))
+                
+                if (Input.GetButtonDown ("Interact"))
 				if (PlayerPrefs.GetInt ("LevelNumber") >= DoorToOpen.GetComponent<DoorScript> ().levelToLoad) {
 					this.GetComponent<Movement> ().enabled = false;
 					openingDoor = true;
 					openDoorTimer = 2;
+                    fadeTimer = 2;
 					InteractText.text = "";
 				} else {
 					Debug.Log ("Not Ready");
@@ -99,7 +121,7 @@ public class PlayerController : MonoBehaviour {
 			} else if (nextToKey == true) {
 				if (InteractText.enabled == false) {
 					InteractText.enabled = true;
-					InteractText.text = "Click to take key";
+					InteractText.text = "Press space to take key";
 				}
 				if (Input.GetButtonDown ("Interact")) {
 					TakeKey (keyToPickup.GetComponent<KeyScript> ().thisLevelNumber+1, keyToPickup.gameObject);
@@ -107,7 +129,7 @@ public class PlayerController : MonoBehaviour {
 			} else if (nextToBucket && holdingBucket == false) {
 				if (InteractText.enabled == false) {
 					InteractText.enabled = true;
-					InteractText.text = "Click to pickup bucket";
+					InteractText.text = "Press space to pickup bucket";
 				}
 				if (Input.GetButtonDown ("Interact")) {
 					bucketToHold = BucketToPickup;
@@ -132,24 +154,34 @@ public class PlayerController : MonoBehaviour {
 		} 
 	}
 	
-
-
 	void OpenDoor(int LevelNumber, Vector3 SpawnPos){
-		Debug.Log ("Opening level " + LevelNumber);
-		if (PlayerPrefs.GetInt ("LevelNumber") >= LevelNumber) {
-			this.transform.position = SpawnPos;
-			Destroy (GameObject.FindWithTag ("Level"));
-			Instantiate (gameManager.Levels [LevelNumber]);
-			this.GetComponent<Movement>().enabled = true;
-			openingDoor = false;
-            nextToDoor = false;
-		} else {
-			Debug.Log ("Not Ready");
-			interactTimer = 3;
-			readyToInteract = false;
-			InteractText.enabled = false;
-			noEntryText.enabled = true;
-		}
+        if (DoorToOpen.GetComponent<BucketSceneDoor>() != null)
+        {
+            DoorToOpen.GetComponent<BucketSceneDoor>().OpenMaze();
+        }
+        else
+        {
+            Debug.Log("Opening level " + LevelNumber);
+            if (PlayerPrefs.GetInt("LevelNumber") >= LevelNumber)
+            {
+                this.transform.position = SpawnPos;
+                Destroy(GameObject.FindWithTag("Level"));
+                Instantiate(gameManager.Levels[LevelNumber]);
+                currentLevel = LevelNumber;
+                this.GetComponent<Movement>().enabled = true;
+                openingDoor = false;
+                nextToDoor = false;
+
+            }
+            else
+            {
+                Debug.Log("Not Ready");
+                interactTimer = 3;
+                readyToInteract = false;
+                InteractText.enabled = false;
+                noEntryText.enabled = true;
+            }
+        }
 	}
 
 	void TakeKey(int levelToSet, GameObject key){
@@ -173,8 +205,8 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void FadingPanel(){
-		if (openDoorTimer > 0) {
-			openDoorTimer -= Time.deltaTime;
+		if (fadeTimer > 0) {
+            fadeTimer -= Time.deltaTime;
 			fadePanel.GetComponent<Image> ().enabled = true;
 			fadePanel.GetComponent<Image> ().color = new Color (0, 0, 0, Mathf.MoveTowards (fadePanel.GetComponent<Image> ().color.a, 255, 0.01f));
 		} else {
@@ -224,4 +256,36 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    void Die() {
+        Destroy(GameObject.FindWithTag("Level"));
+        Instantiate(gameManager.Levels[currentLevel]);
+        energySlider.value = 1;
+        this.transform.position = new Vector3(0, 0, 0);
+        dead = false;
+    }
+
+	void OnCollisionEnter2D(Collision2D coll){
+
+        if (coll.gameObject.tag == "Drip" && dead == false) {
+			UseEnergy();		
+		}
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

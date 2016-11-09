@@ -7,6 +7,7 @@ public class Movement : MonoBehaviour {
 	bool grounded;
 	public float jumpHeight;
 	float cameraHeight;
+    bool jumped;
 
 	// Use this for initialization
 	void Start () {
@@ -19,20 +20,26 @@ public class Movement : MonoBehaviour {
 	}
 
 	void Move(){
-		if (Input.GetAxis ("Horizontal") > 0.01f) {
+		if (Input.GetAxisRaw ("Horizontal") > 0.01f) {
 			this.transform.position += new Vector3(Speed,0,0) * Time.deltaTime;
-            this.transform.localScale = new Vector3(0.06f, 0.14f, 1);
+            this.transform.localScale = new Vector3(0.12f, 0.12f, 1);
 		}
-		if (Input.GetAxis ("Horizontal") < -0.01f) {
+		if (Input.GetAxisRaw ("Horizontal") < -0.01f) {
 			this.transform.position += new Vector3(-Speed,0,0) * Time.deltaTime;
-            this.transform.localScale = new Vector3(-0.06f, 0.14f, 1);
+            this.transform.localScale = new Vector3(-0.12f, 0.12f, 1);
         }
-		if (Input.GetButtonDown ("Jump")) {
+		if (Input.GetAxisRaw("Vertical") > 0.01f && jumped == false && thisRigidbody2d.velocity.y == 0) {
 			Jump ();
+            jumped = true;
 		}
+        if (Input.GetAxisRaw("Vertical") > -0.01f && Input.GetAxisRaw("Vertical") < 0.01f && jumped == true)
+        {
+            jumped = false;
+        }
 
 
-	}
+
+    }
 
 	public void Jump(){
 		if (grounded == true){
