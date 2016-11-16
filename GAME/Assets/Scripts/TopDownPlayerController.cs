@@ -5,6 +5,7 @@ public class TopDownPlayerController : MonoBehaviour {
 
     public float Speed = 10;
     Rigidbody2D thisRigidbody;
+	public GameObject LevelToOpen;
 
 	// Use this for initialization
 	void Start () {
@@ -21,7 +22,19 @@ public class TopDownPlayerController : MonoBehaviour {
         thisRigidbody.velocity = new Vector3(Input.GetAxisRaw("Horizontal")*Speed, Input.GetAxisRaw("Vertical")*Speed, 0);
     }
 
-    void OnTriggerEnter2D() {
-
+    void OnTriggerStay2D(Collider2D other) {
+		if(other.gameObject.tag == "Door"){
+			OpenDoor ();
+			Debug.Log ("space to open Door");
+			//this.GetComponent<PlayerController>().
+		}
     }
+
+	void OpenDoor(){
+		if (Input.GetButtonDown ("Interact")) {
+			this.transform.position = new Vector3 (0, 0, 0);
+			Destroy (GameObject.FindWithTag ("Level"));
+			Instantiate (LevelToOpen);
+		}
+	}
 }
