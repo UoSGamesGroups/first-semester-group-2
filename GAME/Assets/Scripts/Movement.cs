@@ -22,13 +22,13 @@ public class Movement : MonoBehaviour {
 	void Move(){
 		if (Input.GetAxisRaw ("Horizontal") > 0.01f) {
 			this.transform.position += new Vector3(Speed,0,0) * Time.deltaTime;
-            this.transform.localScale = new Vector3(0.12f, 0.12f, 1);
+            this.transform.localScale = new Vector3(0.15f, 0.15f, 1);
 		}
 		if (Input.GetAxisRaw ("Horizontal") < -0.01f) {
 			this.transform.position += new Vector3(-Speed,0,0) * Time.deltaTime;
-            this.transform.localScale = new Vector3(-0.12f, 0.12f, 1);
+            this.transform.localScale = new Vector3(-0.15f, 0.15f, 1);
         }
-		if (Input.GetAxisRaw("Vertical") > 0.01f && jumped == false && thisRigidbody2d.velocity.y == 0) {
+		if (Input.GetAxisRaw("Vertical") > 0.01f && jumped == false && thisRigidbody2d.velocity.y <= 0.5) {
 			Jump ();
             jumped = true;
 		}
