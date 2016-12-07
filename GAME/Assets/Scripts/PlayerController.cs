@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour {
     #region Variables
     public Camera playerCamera;
 	public Text InteractText;
+	public Text BucketText;
 	public Text noEntryText;
 	public GameManager gameManager;
 	public Slider energySlider;
@@ -34,7 +35,7 @@ public class PlayerController : MonoBehaviour {
 
     void Start () {
 		this.transform.position = new Vector3 (0, 0, 0);
-		//energySlider.value = 0.2f;
+		energySlider.value = 1f;
 		noEntryText.enabled = false;
 		readyToInteract = true;
 		holdingBucket = false;
@@ -61,11 +62,15 @@ public class PlayerController : MonoBehaviour {
 			HoldBucket(bucketToHold);
 		}
 
+		if (EnergyTimer < 4 && losingEnergy == false){
+			BucketText.enabled = false;
+		}
+
         if (EnergyTimer >= 0) {
             EnergyTimer -= Time.deltaTime;
         }else {
             if (losingEnergy == false) {
-                InteractText.enabled = false;
+                
             }
             losingEnergy = true;
         }
@@ -92,15 +97,15 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	public void UseEnergy(){
-		if(energySlider.value > 0.1f){
-			energySlider.value -= 0.1f;
-        }
-        else
-        {
-            energySlider.value -= 0.1f;
-            fadeTimer = 2;
-            dead = true;
-        }
+			if(energySlider.value > 0.1f){
+				energySlider.value -= 0.1f;
+        	}
+        	else
+        	{
+            	energySlider.value -= 0.1f;
+            	fadeTimer = 2;
+            	dead = true;
+        	}
 	}
 
 	void Interact(){
@@ -215,6 +220,8 @@ public class PlayerController : MonoBehaviour {
 			holdingBucket = false;
 			interactTimer = 1;
             bucket.GetComponent<bucketScript>().beingHeld = false;
+			nextToBucket = false;
+			bucketToHold = null;
 		}
 		ReadyToDrop += Time.deltaTime;
 	}
@@ -282,13 +289,12 @@ public class PlayerController : MonoBehaviour {
     public void BucketPositioned() {
         losingEnergy = false;
         EnergyTimer = 5;
-        InteractText.text = "You have Gained 5 Seconds";
-        InteractText.enabled = true;
+        BucketText.enabled = true;
     }
 
     void OnCollisionEnter2D(Collision2D coll){
 
-        if (coll.gameObject.tag == "Drip" && dead == false) {
+        if (coll.gameObject.tag == "Drip" && dead == false && losingEnergy == true) {
 			UseEnergy();
 		}
 	}
