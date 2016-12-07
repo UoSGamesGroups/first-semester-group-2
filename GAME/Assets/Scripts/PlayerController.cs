@@ -28,7 +28,8 @@ public class PlayerController : MonoBehaviour {
     float fadeTimer;
     bool dead;
     int currentLevel;
-    bool losingEnergy;
+    bool losingEnergy; 
+    float EnergyTimer = 5;
     #endregion
 
     void Start () {
@@ -41,6 +42,7 @@ public class PlayerController : MonoBehaviour {
     	fadeTimer = 0;
 		PlayerPrefs.SetInt("LevelNumber", 1);
     	currentLevel = 0;
+        losingEnergy = true;
 	}
 
 	void Update () {
@@ -59,6 +61,15 @@ public class PlayerController : MonoBehaviour {
 			HoldBucket(bucketToHold);
 		}
 
+        if (EnergyTimer >= 0) {
+            EnergyTimer -= Time.deltaTime;
+        }else {
+            if (losingEnergy == false) {
+                InteractText.enabled = false;
+            }
+            losingEnergy = true;
+        }
+
     if (openDoorTimer > 0) {
         openDoorTimer -= Time.deltaTime;
     }
@@ -69,8 +80,6 @@ public class PlayerController : MonoBehaviour {
     }
 
     FadingPanel ();
-
-    losingEnergy = true;
     if(losingEnergy == true){
         energySlider.value -= 0.00833f * Time.deltaTime;
     }
@@ -138,7 +147,8 @@ public class PlayerController : MonoBehaviour {
 				if (Input.GetButtonDown ("Interact")) {
 					bucketToHold = BucketToPickup;
 					holdingBucket = true;
-					ReadyToDrop = 0;
+                    bucketToHold.GetComponent<bucketScript>().beingHeld = true;
+                    ReadyToDrop = 0;
 					readyToInteract = false;
 					InteractText.enabled = false;
 				}
@@ -204,6 +214,7 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetButtonDown("Interact") && ReadyToDrop >= 0.5){
 			holdingBucket = false;
 			interactTimer = 1;
+            bucket.GetComponent<bucketScript>().beingHeld = false;
 		}
 		ReadyToDrop += Time.deltaTime;
 	}
@@ -223,7 +234,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-  void OnTriggerStay2D(Collider2D other){
+    void OnTriggerStay2D(Collider2D other){
         if(other.transform.tag == "Door"){
             nextToDoor = true;
             DoorToOpen = other.gameObject;
@@ -242,7 +253,7 @@ public class PlayerController : MonoBehaviour {
         }
   }
 
-  void OnTriggerExit2D(Collider2D other) {
+    void OnTriggerExit2D(Collider2D other) {
         if (other.transform.tag == "Door")
         {
             nextToDoor = false;
@@ -260,7 +271,7 @@ public class PlayerController : MonoBehaviour {
         }
   }
 
-  void Die() {
+    void Die() {
         Destroy(GameObject.FindWithTag("Level"));
         Instantiate(gameManager.Levels[currentLevel]);
         energySlider.value = 1;
@@ -268,7 +279,14 @@ public class PlayerController : MonoBehaviour {
         dead = false;
   }
 
-	void OnCollisionEnter2D(Collision2D coll){
+    public void BucketPositioned() {
+        losingEnergy = false;
+        EnergyTimer = 5;
+        InteractText.text = "You have Gained 5 Seconds";
+        InteractText.enabled = true;
+    }
+
+    void OnCollisionEnter2D(Collision2D coll){
 
         if (coll.gameObject.tag == "Drip" && dead == false) {
 			UseEnergy();
