@@ -2,9 +2,7 @@
 using System.Collections;
 
 public class GameManager : MonoBehaviour {
-	public GameObject[] cameras;
 	public GameObject[] Levels;
-	int cameraNumber = 0;
     int PlayerScore;
 	// Use this for initialization
 	void Start () {

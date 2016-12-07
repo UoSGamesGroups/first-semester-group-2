@@ -13,7 +13,7 @@ public class Movement : MonoBehaviour {
 	void Start () {
 		thisRigidbody2d = this.GetComponent<Rigidbody2D> ();
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		Move ();
@@ -47,11 +47,11 @@ public class Movement : MonoBehaviour {
 		}
 	}
 
-	void OnCollisionEnter2D(Collision2D coll){
+	void OnCollisionStay2D(Collision2D coll){
 
-		Debug.Log ("We Touched " + coll.gameObject.tag);
+	//	Debug.Log ("We Touched " + coll.gameObject.tag);
 
-		if (coll.gameObject.tag == "Ground") {
+		if (coll.gameObject.tag == "Ground" && grounded == false) {
 			grounded = true;
 			Debug.Log ("grounded is " + grounded);
 		}
@@ -63,5 +63,5 @@ public class Movement : MonoBehaviour {
 			Debug.Log ("grounded is " + grounded);
 		}
 	}
-		
+
 }

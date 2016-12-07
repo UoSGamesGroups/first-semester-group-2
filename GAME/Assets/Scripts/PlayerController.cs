@@ -28,21 +28,21 @@ public class PlayerController : MonoBehaviour {
     float fadeTimer;
     bool dead;
     int currentLevel;
+    bool losingEnergy;
     #endregion
 
     void Start () {
-		Cursor.lockState = CursorLockMode.Locked;
 		this.transform.position = new Vector3 (0, 0, 0);
 		//energySlider.value = 0.2f;
 		noEntryText.enabled = false;
 		readyToInteract = true;
 		holdingBucket = false;
 		openDoorTimer = 0;
-        fadeTimer = 0;
+    	fadeTimer = 0;
 		PlayerPrefs.SetInt("LevelNumber", 1);
-        currentLevel = 0;
+    	currentLevel = 0;
 	}
-	
+
 	void Update () {
 		Interact ();
 		if (PlayerPrefs.GetInt ("LevelNumber") == 0) {
@@ -59,17 +59,21 @@ public class PlayerController : MonoBehaviour {
 			HoldBucket(bucketToHold);
 		}
 
-        if (openDoorTimer > 0) {
-            openDoorTimer -= Time.deltaTime;
-        }
+    if (openDoorTimer > 0) {
+        openDoorTimer -= Time.deltaTime;
+    }
 
-        if (dead == true && fadeTimer <= 0)
-        {
-            Die();
-        }
+    if (dead == true && fadeTimer <= 0)
+    {
+        Die();
+    }
 
-        FadingPanel ();
+    FadingPanel ();
 
+    losingEnergy = true;
+    if(losingEnergy == true){
+        energySlider.value -= 0.00833f * Time.deltaTime;
+    }
 	}
 
 	public void AddEnergy(){
@@ -103,7 +107,7 @@ public class PlayerController : MonoBehaviour {
 				if (openingDoor == true && openDoorTimer <= 0){
 					OpenDoor (DoorToOpen.GetComponent<DoorScript> ().levelToLoad, DoorToOpen.GetComponent<DoorScript> ().spawnPosition);
 				}
-                
+
                 if (Input.GetButtonDown ("Interact"))
 				if (PlayerPrefs.GetInt ("LevelNumber") >= DoorToOpen.GetComponent<DoorScript> ().levelToLoad) {
 					this.GetComponent<Movement> ().enabled = false;
@@ -145,15 +149,15 @@ public class PlayerController : MonoBehaviour {
 					InteractText.enabled = false;
 				}
 			}
-		} 
-		else 
+		}
+		else
 		{
 			if (InteractText.enabled == true) {
 				InteractText.enabled = false;
 			}
-		} 
+		}
 	}
-	
+
 	void OpenDoor(int LevelNumber, Vector3 SpawnPos){
         if (DoorToOpen.GetComponent<BucketSceneDoor>() != null)
         {
@@ -189,12 +193,12 @@ public class PlayerController : MonoBehaviour {
 		PlayerPrefs.SetInt ("LevelNumber", levelToSet);
         nextToKey = false;
         keyToPickup = null;
-           
+
         Destroy (key);
 	}
 
 	void HoldBucket(GameObject bucket){
-		
+
 		bucket.transform.position = bucketPositionObject.transform.position;
 		bucket.transform.rotation = bucketPositionObject.transform.rotation;
 		if (Input.GetButtonDown("Interact") && ReadyToDrop >= 0.5){
@@ -219,7 +223,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-    void OnTriggerStay2D(Collider2D other){
+  void OnTriggerStay2D(Collider2D other){
         if(other.transform.tag == "Door"){
             nextToDoor = true;
             DoorToOpen = other.gameObject;
@@ -230,15 +234,15 @@ public class PlayerController : MonoBehaviour {
             nextToKey = true;
             keyToPickup = other.gameObject;
         }
-        
+
         if (other.transform.tag == "Bucket")
         {
             nextToBucket = true;
             BucketToPickup = other.gameObject;
         }
-    }
+  }
 
-    void OnTriggerExit2D(Collider2D other) {
+  void OnTriggerExit2D(Collider2D other) {
         if (other.transform.tag == "Door")
         {
             nextToDoor = false;
@@ -254,38 +258,20 @@ public class PlayerController : MonoBehaviour {
             nextToBucket = false;
             BucketToPickup = null;
         }
-    }
+  }
 
-    void Die() {
+  void Die() {
         Destroy(GameObject.FindWithTag("Level"));
         Instantiate(gameManager.Levels[currentLevel]);
         energySlider.value = 1;
         this.transform.position = new Vector3(0, 0, 0);
         dead = false;
-    }
+  }
 
 	void OnCollisionEnter2D(Collision2D coll){
 
         if (coll.gameObject.tag == "Drip" && dead == false) {
-			UseEnergy();		
+			UseEnergy();
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
