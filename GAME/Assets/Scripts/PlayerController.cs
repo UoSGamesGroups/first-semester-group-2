@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour {
 		holdingBucket = false;
 		openDoorTimer = 0;
     	fadeTimer = 0;
-		PlayerPrefs.SetInt("LevelNumber", 1);
+		PlayerPrefs.SetInt("LevelNumber", 10);
     	currentLevel = 0;
         losingEnergy = true;
 	}
@@ -62,7 +62,7 @@ public class PlayerController : MonoBehaviour {
 			HoldBucket(bucketToHold);
 		}
 
-		if (EnergyTimer < 4 && losingEnergy == false){
+		if (EnergyTimer <= 0 && losingEnergy == false){
 			BucketText.enabled = false;
 		}
 
@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour {
     FadingPanel ();
     if(losingEnergy == true){
         energySlider.value -= 0.00833f * Time.deltaTime;
+			PlayerPrefs.SetString("EnergyLeft", Mathf.Round(energySlider.value * 100).ToString() + "%");
     }
 	}
 
@@ -123,7 +124,7 @@ public class PlayerController : MonoBehaviour {
 				}
 
                 if (Input.GetButtonDown ("Interact"))
-				if (PlayerPrefs.GetInt ("LevelNumber") >= DoorToOpen.GetComponent<DoorScript> ().levelToLoad) {
+				if (PlayerPrefs.GetInt ("BooksSaved") >= 4) {
 					this.GetComponent<Movement> ().enabled = false;
 					openingDoor = true;
 					openDoorTimer = 2;
@@ -174,32 +175,18 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OpenDoor(int LevelNumber, Vector3 SpawnPos){
-        if (DoorToOpen.GetComponent<BucketSceneDoor>() != null)
+		if (DoorToOpen.GetComponent<BucketSceneDoor>() != null && PlayerPrefs.GetInt("BooksSaved") >= 3)
         {
             DoorToOpen.GetComponent<BucketSceneDoor>().OpenMaze();
         }
         else
         {
-            Debug.Log("Opening level " + LevelNumber);
-            if (PlayerPrefs.GetInt("LevelNumber") >= LevelNumber)
-            {
-                this.transform.position = SpawnPos;
-                Destroy(GameObject.FindWithTag("Level"));
-                Instantiate(gameManager.Levels[LevelNumber]);
-                currentLevel = LevelNumber;
-                this.GetComponent<Movement>().enabled = true;
-                openingDoor = false;
-                nextToDoor = false;
-
-            }
-            else
-            {
-                Debug.Log("Not Ready");
-                interactTimer = 3;
-                readyToInteract = false;
-                InteractText.enabled = false;
-                noEntryText.enabled = true;
-            }
+             Debug.Log("Not Ready");
+             interactTimer = 3;
+             readyToInteract = false;
+             InteractText.enabled = false;
+             noEntryText.enabled = true;
+         
         }
 	}
 
